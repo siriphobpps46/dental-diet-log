@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
 import { ErrorCard } from "@/components/ErrorCard";
@@ -90,19 +88,9 @@ export default function ReviewPage() {
   return (
     <div className="flex min-h-screen flex-col pb-10">
       <header className="mx-auto w-full max-w-lg px-5 pt-8">
-        <Link
-          href="/"
-          className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-purple-400 hover:text-purple-600"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          กลับหน้าแรก
-        </Link>
         <div className="flex items-center gap-3">
           <ToothMascot pose="smile" className="h-12 w-12 shrink-0" />
-          <div>
-            <h1 className="text-xl font-bold text-purple-900">ข้อมูลทั้งหมด</h1>
-            <p className="text-sm text-purple-400">สำหรับดูภาพรวม แก้ไขจากหน้านี้ไม่ได้</p>
-          </div>
+          <h1 className="text-xl font-bold text-purple-900">ข้อมูลทั้งหมด</h1>
         </div>
       </header>
 
