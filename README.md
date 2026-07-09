@@ -26,10 +26,8 @@
 - `/` — วันนี้: มื้อที่ลงแล้ว + ปุ่ม + ลอยเพิ่มมื้อ
 - `/history` — ประวัติย้อนหลัง แยกตามวัน แตะเพื่อแก้ไข/ลบ
 
-## Deploy ขึ้น Vercel
+## Deploy
 
-```bash
-npx vercel
-```
+Live ที่ [dental-diet-log.vercel.app](https://dental-diet-log.vercel.app) — ต่อ auto-deploy กับ GitHub แล้ว push ขึ้น `main` deploy ให้อัตโนมัติ
 
-ตั้งค่า Environment Variable `NEXT_PUBLIC_APPS_SCRIPT_URL` ใน Vercel Project Settings (หรือตอนรัน `vercel` ครั้งแรกก็ได้) ให้เป็น Web App URL เดียวกับที่ใช้ใน `.env.local`
+Environment Variable `NEXT_PUBLIC_APPS_SCRIPT_URL` ตั้งไว้ใน Vercel Project Settings (Production + Preview) แล้ว ให้เป็น Web App URL เดียวกับที่ใช้ใน `.env.local`
