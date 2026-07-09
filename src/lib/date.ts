@@ -61,3 +61,13 @@ export function calculateAge(birthDateStr: string): number | null {
   if (!hadBirthdayThisYear) age--;
   return age;
 }
+
+export function daysBetweenInclusive(from: string, to: string): number {
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const [ty, tm, td] = to.split("-").map(Number);
+  if (!fy || !fm || !fd || !ty || !tm || !td) return 0;
+  const fromDate = new Date(fy, fm - 1, fd);
+  const toDate = new Date(ty, tm - 1, td);
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.round((toDate.getTime() - fromDate.getTime()) / msPerDay) + 1;
+}

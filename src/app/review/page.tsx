@@ -7,6 +7,7 @@ import { EntryCard } from "@/components/EntryCard";
 import { ErrorCard } from "@/components/ErrorCard";
 import { LoadingTooth } from "@/components/LoadingTooth";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { ReviewSummaryCard } from "@/components/ReviewSummaryCard";
 import { ToothMascot } from "@/components/ToothMascot";
 import { fetchEntriesByRange, fetchProfile } from "@/lib/api";
 import { calculateAge, formatThaiDateShort, isToday, toDateStr, todayDateStr } from "@/lib/date";
@@ -174,6 +175,9 @@ export default function ReviewPage() {
             {loadError && <ErrorCard error={loadError} onRetry={load} />}
             {entries !== null && !loadError && groups.length === 0 && (
               <EmptyState pose="sleepy" title="ไม่พบข้อมูลในช่วงที่เลือก" subtitle="ลองปรับวันที่หรือตัวกรองดูนะ" />
+            )}
+            {entries !== null && !loadError && entries.length > 0 && (
+              <ReviewSummaryCard entries={entries} from={from} to={to} />
             )}
             {entries !== null && !loadError && groups.length > 0 && (
               <p className="text-xs font-medium text-purple-400">
