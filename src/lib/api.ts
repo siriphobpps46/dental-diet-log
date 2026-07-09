@@ -1,76 +1,119 @@
-import type { Entry, EntryInput } from "./types";
+import { getSupabase } from "./supabase";
+import type { Entry, EntryInput, NewPhoto } from "./types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL;
+const PHOTOS_BUCKET = "photos";
 
-export class ApiConfigError extends Error {
-  constructor() {
-    super("ยังไม่ได้ตั้งค่า NEXT_PUBLIC_APPS_SCRIPT_URL");
-    this.name = "ApiConfigError";
-  }
+interface EntryRow {
+  id: string;
+  date: string;
+  time: string;
+  meal_type: string;
+  description: string;
+  water: string;
+  note: string;
+  photo_urls: string[] | null;
+  created_at: string;
+  updated_at: string;
 }
 
-function requireBaseUrl(): string {
-  if (!BASE_URL) throw new ApiConfigError();
-  return BASE_URL;
+function rowToEntry(row: EntryRow): Entry {
+  return {
+    id: row.id,
+    date: row.date,
+    time: row.time,
+    mealType: row.meal_type,
+    description: row.description,
+    water: row.water,
+    photoUrls: row.photo_urls ?? [],
+    note: row.note,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
-async function get(params: Record<string, string>): Promise<{ entries: Entry[] }> {
-  const url = new URL(requireBaseUrl());
-  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+async function uploadPhotos(photos: NewPhoto[]): Promise<string[]> {
+  if (photos.length === 0) return [];
+  const supabase = getSupabase();
 
-  const res = await fetch(url.toString(), { method: "GET", cache: "no-store" });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || "โหลดข้อมูลไม่สำเร็จ");
-  return data;
-}
-
-async function post(action: "create" | "update" | "delete", entry: Partial<EntryInput> & { id?: string }) {
-  const res = await fetch(requireBaseUrl(), {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify({ action, entry }),
-  });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || "บันทึกข้อมูลไม่สำเร็จ");
-  return data;
+  return Promise.all(
+    photos.map(async (photo) => {
+      const path = `${crypto.randomUUID()}.jpg`;
+      const { error } = await supabase.storage.from(PHOTOS_BUCKET).upload(path, photo.blob, {
+        contentType: photo.mimeType,
+      });
+      if (error) throw new Error(error.message);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(PHOTOS_BUCKET).getPublicUrl(path);
+      return publicUrl;
+    })
+  );
 }
 
 export async function fetchEntriesByDate(date: string): Promise<Entry[]> {
-  const { entries } = await get({ date });
-  return entries;
+  const supabase = getSupabase();
+  const { data, error } = await supabase.from("entries").select("*").eq("date", date);
+  if (error) throw new Error(error.message);
+  return (data as EntryRow[]).map(rowToEntry);
 }
 
 export async function fetchEntriesByRange(from: string, to: string): Promise<Entry[]> {
-  const { entries } = await get({ from, to });
-  return entries;
+  const supabase = getSupabase();
+  const { data, error } = await supabase.from("entries").select("*").gte("date", from).lte("date", to);
+  if (error) throw new Error(error.message);
+  return (data as EntryRow[]).map(rowToEntry);
 }
 
 export async function createEntry(input: EntryInput): Promise<Entry> {
-  const { entry } = await post("create", input);
-  return entry;
+  const supabase = getSupabase();
+  const newUrls = await uploadPhotos(input.photos);
+
+  const { data, error } = await supabase
+    .from("entries")
+    .insert({
+      date: input.date,
+      time: input.time,
+      meal_type: input.mealType,
+      description: input.description,
+      water: input.water,
+      note: input.note,
+      photo_urls: newUrls,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return rowToEntry(data as EntryRow);
 }
 
 export async function updateEntry(input: EntryInput): Promise<Entry> {
-  const { entry } = await post("update", input);
-  return entry;
+  if (!input.id) throw new Error("Missing entry id");
+  const supabase = getSupabase();
+  const newUrls = await uploadPhotos(input.photos);
+  const photoUrls = [...(input.existingPhotoUrls ?? []), ...newUrls];
+
+  const { data, error } = await supabase
+    .from("entries")
+    .update({
+      date: input.date,
+      time: input.time,
+      meal_type: input.mealType,
+      description: input.description,
+      water: input.water,
+      note: input.note,
+      photo_urls: photoUrls,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", input.id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return rowToEntry(data as EntryRow);
 }
 
 export async function deleteEntry(id: string): Promise<void> {
-  await post("delete", { id });
-}
-
-// Chrome's Opaque Response Blocking rejects hotlinked drive.google.com URLs
-// in <img> tags (Drive doesn't send CORS/CORP headers), and Apps Script Web
-// Apps can't return a raw Blob from doGet either. So photos are fetched as
-// base64 JSON through the Apps Script and rendered as data: URLs instead.
-export async function fetchPhotoDataUrl(driveUrl: string): Promise<string> {
-  const fileId = driveUrl.match(/[?&]id=([^&]+)/)?.[1];
-  if (!fileId) throw new Error("ลิงก์รูปไม่ถูกต้อง");
-
-  const url = new URL(requireBaseUrl());
-  url.searchParams.set("photo", fileId);
-  const res = await fetch(url.toString());
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || "โหลดรูปไม่สำเร็จ");
-  return `data:${data.mimeType};base64,${data.base64}`;
+  const supabase = getSupabase();
+  const { error } = await supabase.from("entries").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }

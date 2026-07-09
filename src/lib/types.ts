@@ -16,7 +16,7 @@ export interface Entry {
 }
 
 export interface NewPhoto {
-  base64: string;
+  blob: Blob;
   mimeType: string;
   name: string;
 }

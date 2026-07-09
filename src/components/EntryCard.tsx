@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Droplets, StickyNote } from "lucide-react";
-import { DrivePhoto } from "./DrivePhoto";
+import { PhotoThumb } from "./PhotoThumb";
 import { PhotoLightbox } from "./PhotoLightbox";
 import type { Entry } from "@/lib/types";
 
@@ -67,7 +67,7 @@ export function EntryCard({ entry, onClick }: EntryCardProps) {
               }}
               className="shrink-0"
             >
-              <DrivePhoto
+              <PhotoThumb
                 url={url}
                 alt="รูปอาหาร"
                 className="h-16 w-16 rounded-lg object-cover ring-1 ring-purple-100"

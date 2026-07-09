@@ -21,13 +21,21 @@ export function compressImage(file: File): Promise<NewPhoto> {
           return;
         }
         ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
-        const base64 = dataUrl.split(",")[1] ?? "";
-        resolve({
-          base64,
-          mimeType: "image/jpeg",
-          name: renameToJpg(file.name),
-        });
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error("บีบอัดรูปไม่สำเร็จ"));
+              return;
+            }
+            resolve({
+              blob,
+              mimeType: "image/jpeg",
+              name: renameToJpg(file.name),
+            });
+          },
+          "image/jpeg",
+          JPEG_QUALITY
+        );
       };
       img.src = reader.result as string;
     };

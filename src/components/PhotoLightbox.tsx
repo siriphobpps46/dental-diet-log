@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { DrivePhoto } from "./DrivePhoto";
+import { PhotoThumb } from "./PhotoThumb";
 
 interface PhotoLightboxProps {
   urls: string[];
@@ -69,7 +69,7 @@ export function PhotoLightbox({ urls, index, onClose, onIndexChange }: PhotoLigh
         </button>
       )}
 
-      <DrivePhoto
+      <PhotoThumb
         url={urls[index]}
         alt="รูปอาหาร"
         className="min-h-[200px] min-w-[200px] max-h-[80vh] max-w-[90vw] rounded-lg object-contain"

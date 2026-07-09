@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
-import { DrivePhoto } from "./DrivePhoto";
+import { PhotoThumb } from "./PhotoThumb";
 import { PhotoLightbox } from "./PhotoLightbox";
 import { compressImage } from "@/lib/image";
 import type { NewPhoto } from "@/lib/types";
@@ -26,6 +26,14 @@ export function PhotoUploader({
   const [isCompressing, setIsCompressing] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [compressError, setCompressError] = useState<string | null>(null);
+
+  const newPhotoPreviews = useMemo(() => newPhotos.map((p) => URL.createObjectURL(p.blob)), [newPhotos]);
+
+  useEffect(() => {
+    return () => {
+      newPhotoPreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [newPhotoPreviews]);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -55,7 +63,7 @@ export function PhotoUploader({
         {existingUrls.map((url, i) => (
           <div key={url} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl ring-1 ring-purple-100">
             <button type="button" onClick={() => setLightboxIndex(i)} className="h-full w-full">
-              <DrivePhoto url={url} alt="รูปอาหาร" className="h-full w-full object-cover" />
+              <PhotoThumb url={url} alt="รูปอาหาร" className="h-full w-full object-cover" />
             </button>
             <button
               type="button"
@@ -70,11 +78,7 @@ export function PhotoUploader({
         {newPhotos.map((photo, index) => (
           <div key={index} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl ring-1 ring-purple-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`data:${photo.mimeType};base64,${photo.base64}`}
-              alt="รูปอาหาร"
-              className="h-full w-full object-cover"
-            />
+            <img src={newPhotoPreviews[index]} alt="รูปอาหาร" className="h-full w-full object-cover" />
             <button
               type="button"
               onClick={() => onRemoveNewPhoto(index)}
