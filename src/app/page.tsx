@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { Eye, RefreshCw } from "lucide-react";
+import { Eye } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
@@ -11,6 +11,7 @@ import { EntryFormModal } from "@/components/EntryFormModal";
 import { ErrorCard } from "@/components/ErrorCard";
 import { FloatingAddButton } from "@/components/FloatingAddButton";
 import { LoadingTooth } from "@/components/LoadingTooth";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { Toast } from "@/components/Toast";
 import { ToothMascot } from "@/components/ToothMascot";
 import { fetchEntriesByDate } from "@/lib/api";
@@ -25,7 +26,7 @@ export default function HomePage() {
   const { toast, notify } = useToast();
   const today = todayDateStr();
 
-  const { data, error, mutate, isValidating } = useSWR<Entry[]>(
+  const { data, error, mutate } = useSWR<Entry[]>(
     ["entries", "date", today],
     async () => {
       const data = await fetchEntriesByDate(today);
@@ -49,42 +50,36 @@ export default function HomePage() {
               <p className="text-sm text-purple-400">{formatThaiDate(today)}</p>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={() => mutate()}
-              aria-label="รีเฟรช"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
-            >
-              <RefreshCw className={`h-5 w-5 ${isValidating ? "animate-spin" : ""}`} />
-            </button>
-            <Link
-              href="/review"
-              aria-label="ดูข้อมูลทั้งหมด"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
-            >
-              <Eye className="h-5 w-5" />
-            </Link>
-          </div>
+          <Link
+            href="/review"
+            aria-label="ดูข้อมูลทั้งหมด"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
+          >
+            <Eye className="h-5 w-5" />
+          </Link>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-3 px-5 pb-24 pt-6">
-        {entries === null && !loadError && <LoadingTooth />}
-        {loadError && <ErrorCard error={loadError} onRetry={load} />}
-        {entries !== null && !loadError && entries.length === 0 && (
-          <EmptyState
-            pose="sleepy"
-            title="ยังไม่ได้ลงมื้ออาหารวันนี้เลย"
-            subtitle="กดปุ่ม + เพื่อเริ่มบันทึกมื้อแรกของวันนี้กันนะ"
-          />
-        )}
-        {entries !== null &&
-          !loadError &&
-          entries.length > 0 &&
-          entries.map((entry) => (
-            <EntryCard key={entry.id} entry={entry} onClick={() => setModalState({ mode: "edit", entry })} />
-          ))}
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-5 pb-24 pt-6">
+        <PullToRefresh onRefresh={load} disabled={modalState !== null}>
+          <div className="flex flex-col gap-3">
+            {entries === null && !loadError && <LoadingTooth />}
+            {loadError && <ErrorCard error={loadError} onRetry={load} />}
+            {entries !== null && !loadError && entries.length === 0 && (
+              <EmptyState
+                pose="sleepy"
+                title="ยังไม่ได้ลงมื้ออาหารวันนี้เลย"
+                subtitle="กดปุ่ม + เพื่อเริ่มบันทึกมื้อแรกของวันนี้กันนะ"
+              />
+            )}
+            {entries !== null &&
+              !loadError &&
+              entries.length > 0 &&
+              entries.map((entry) => (
+                <EntryCard key={entry.id} entry={entry} onClick={() => setModalState({ mode: "edit", entry })} />
+              ))}
+          </div>
+        </PullToRefresh>
       </main>
 
       <FloatingAddButton onClick={() => setModalState({ mode: "add" })} />

@@ -3,13 +3,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { Eye, RefreshCw } from "lucide-react";
+import { Eye } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
 import { EntryFormModal } from "@/components/EntryFormModal";
 import { ErrorCard } from "@/components/ErrorCard";
 import { LoadingTooth } from "@/components/LoadingTooth";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { Toast } from "@/components/Toast";
 import { fetchEntriesByRange } from "@/lib/api";
 import { formatThaiDateShort, isToday, toDateStr, todayDateStr } from "@/lib/date";
@@ -22,7 +23,7 @@ export default function HistoryPage() {
   const [selected, setSelected] = useState<Entry | null>(null);
   const { toast, notify } = useToast();
 
-  const { data, error, mutate, isValidating } = useSWR<Entry[]>(
+  const { data, error, mutate } = useSWR<Entry[]>(
     ["entries", "history"],
     () => {
       const to = todayDateStr();
@@ -59,52 +60,46 @@ export default function HistoryPage() {
           <h1 className="text-xl font-bold text-purple-900">ประวัติการบันทึก</h1>
           <p className="text-sm text-purple-400">ย้อนหลัง {RANGE_DAYS} วัน</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => mutate()}
-            aria-label="รีเฟรช"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
-          >
-            <RefreshCw className={`h-5 w-5 ${isValidating ? "animate-spin" : ""}`} />
-          </button>
-          <Link
-            href="/review"
-            aria-label="ดูข้อมูลทั้งหมด"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
-          >
-            <Eye className="h-5 w-5" />
-          </Link>
-        </div>
+        <Link
+          href="/review"
+          aria-label="ดูข้อมูลทั้งหมด"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
+        >
+          <Eye className="h-5 w-5" />
+        </Link>
       </header>
 
-      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 px-5 pb-24 pt-6">
-        {entries === null && !loadError && <LoadingTooth />}
-        {loadError && <ErrorCard error={loadError} onRetry={load} />}
-        {entries !== null && !loadError && groups.length === 0 && (
-          <EmptyState
-            pose="sleepy"
-            title="ยังไม่มีประวัติการบันทึก"
-            subtitle="เริ่มบันทึกมื้ออาหารจากหน้าแรกได้เลย"
-          />
-        )}
-        {groups.map((group) => (
-          <section key={group.date} className="flex flex-col gap-2.5">
-            <h2 className="flex items-center gap-2 text-sm font-bold text-purple-500">
-              {formatThaiDateShort(group.date)}
-              {isToday(group.date) && (
-                <span className="rounded-full bg-purple-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                  วันนี้
-                </span>
-              )}
-            </h2>
-            <div className="flex flex-col gap-3">
-              {group.entries.map((entry) => (
-                <EntryCard key={entry.id} entry={entry} onClick={() => setSelected(entry)} />
-              ))}
-            </div>
-          </section>
-        ))}
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-5 pb-24 pt-6">
+        <PullToRefresh onRefresh={load} disabled={selected !== null}>
+          <div className="flex flex-col gap-5">
+            {entries === null && !loadError && <LoadingTooth />}
+            {loadError && <ErrorCard error={loadError} onRetry={load} />}
+            {entries !== null && !loadError && groups.length === 0 && (
+              <EmptyState
+                pose="sleepy"
+                title="ยังไม่มีประวัติการบันทึก"
+                subtitle="เริ่มบันทึกมื้ออาหารจากหน้าแรกได้เลย"
+              />
+            )}
+            {groups.map((group) => (
+              <section key={group.date} className="flex flex-col gap-2.5">
+                <h2 className="flex items-center gap-2 text-sm font-bold text-purple-500">
+                  {formatThaiDateShort(group.date)}
+                  {isToday(group.date) && (
+                    <span className="rounded-full bg-purple-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                      วันนี้
+                    </span>
+                  )}
+                </h2>
+                <div className="flex flex-col gap-3">
+                  {group.entries.map((entry) => (
+                    <EntryCard key={entry.id} entry={entry} onClick={() => setSelected(entry)} />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </PullToRefresh>
       </main>
 
       <BottomNav />
