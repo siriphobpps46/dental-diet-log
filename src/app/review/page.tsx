@@ -126,6 +126,10 @@ export default function ReviewPage() {
               </div>
             </div>
 
+            {entries !== null && !loadError && entries.length > 0 && (
+              <ReviewSummaryCard entries={entries} from={from} to={to} />
+            )}
+
             <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm shadow-purple-100 ring-1 ring-purple-50">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5 min-w-0">
@@ -175,9 +179,6 @@ export default function ReviewPage() {
             {loadError && <ErrorCard error={loadError} onRetry={load} />}
             {entries !== null && !loadError && groups.length === 0 && (
               <EmptyState pose="sleepy" title="ไม่พบข้อมูลในช่วงที่เลือก" subtitle="ลองปรับวันที่หรือตัวกรองดูนะ" />
-            )}
-            {entries !== null && !loadError && entries.length > 0 && (
-              <ReviewSummaryCard entries={entries} from={from} to={to} />
             )}
             {entries !== null && !loadError && groups.length > 0 && (
               <p className="text-xs font-medium text-purple-400">
