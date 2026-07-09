@@ -90,14 +90,43 @@ export default function ReviewPage() {
       <header className="mx-auto w-full max-w-lg px-5 pt-8">
         <div className="flex items-center gap-3">
           <ToothMascot pose="smile" className="h-12 w-12 shrink-0" />
-          <h1 className="text-xl font-bold text-purple-900">ข้อมูลทั้งหมด</h1>
+          <div>
+            <h1 className="text-xl font-bold text-purple-900">Dental Diet Log</h1>
+            <p className="text-xs font-semibold text-purple-400">รายงานบันทึกอาหารสำหรับการรักษาทันตกรรม</p>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-4 px-5 pt-6">
+        {/* Dentist/Reviewer Greeting Card */}
+        <div className="flex flex-col gap-2.5 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 p-4 text-white shadow-md shadow-purple-200">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🦷</span>
+            <h2 className="font-bold text-sm">รายงานบันทึกอาหาร</h2>
+          </div>
+          
+          <div className="rounded-xl bg-white/10 p-2.5 text-xs">
+            <div className="flex items-center justify-between">
+              <span>คนไข้:</span>
+              <span className="font-bold">นายศิริภพ พูนประสิทธิ์</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1 text-[11px] leading-relaxed opacity-90">
+            <div className="flex items-start gap-1.5">
+              <span className="text-purple-300 select-none">•</span>
+              <span>ประวัติย้อนหลังเพื่อประกอบการวางแผนและติดตามการรักษา</span>
+            </div>
+            <div className="flex items-start gap-1.5">
+              <span className="text-purple-300 select-none">•</span>
+              <span>กรองช่วงเวลาและประเภทมื้ออาหารเพื่อตรวจสอบข้อมูล</span>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm shadow-purple-100 ring-1 ring-purple-50">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-1.5 min-w-0">
               <span className="text-xs font-semibold text-purple-400">จากวันที่</span>
               <input
                 type="date"
@@ -106,7 +135,7 @@ export default function ReviewPage() {
                 className={`${filterInputClass} min-w-0`}
               />
             </label>
-            <label className="flex flex-col gap-1.5">
+            <label className="flex flex-col gap-1.5 min-w-0">
               <span className="text-xs font-semibold text-purple-400">ถึงวันที่</span>
               <input
                 type="date"

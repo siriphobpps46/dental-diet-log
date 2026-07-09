@@ -211,7 +211,7 @@ export function EntryFormModal({ mode, entry, defaultDate, onClose, onSaved, onD
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5 min-w-0">
       <span className="text-xs font-semibold text-purple-400">{label}</span>
       {children}
     </div>
