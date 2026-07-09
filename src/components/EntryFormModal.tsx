@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Trash2, X } from "lucide-react";
+import { AlertCircle, Loader2, Trash2, X } from "lucide-react";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { MealChips } from "./MealChips";
 import { PhotoUploader } from "./PhotoUploader";
 import { createEntry, deleteEntry, updateEntry } from "@/lib/api";
@@ -28,6 +29,7 @@ export function EntryFormModal({ mode, entry, defaultDate, onClose, onSaved, onD
   const [newPhotos, setNewPhotos] = useState<NewPhoto[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const busy = isSaving || isDeleting;
@@ -78,9 +80,7 @@ export function EntryFormModal({ mode, entry, defaultDate, onClose, onSaved, onD
 
   async function handleDelete() {
     if (busy || !entry) return;
-    const confirmed = window.confirm("ลบมื้อนี้เลยไหม? กู้คืนไม่ได้นะ");
-    if (!confirmed) return;
-
+    setConfirmingDelete(false);
     setIsDeleting(true);
     setError(null);
     try {
@@ -135,6 +135,13 @@ export function EntryFormModal({ mode, entry, defaultDate, onClose, onSaved, onD
             </Field>
           </div>
 
+          {date !== todayDateStr() && (
+            <p className="-mt-1 flex items-center gap-1.5 text-xs font-medium text-amber-500">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              กำลังบันทึกย้อนหลัง ตรวจสอบวันที่และเวลาให้ตรงกับตอนทานจริงด้วยนะ
+            </p>
+          )}
+
           <Field label="มื้อ">
             <MealChips value={mealType} onChange={setMealType} />
           </Field>
@@ -185,7 +192,7 @@ export function EntryFormModal({ mode, entry, defaultDate, onClose, onSaved, onD
             {mode === "edit" && (
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => setConfirmingDelete(true)}
                 disabled={busy}
                 className="flex items-center justify-center gap-1.5 rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-500 transition hover:bg-rose-100 disabled:opacity-50"
               >
@@ -205,6 +212,17 @@ export function EntryFormModal({ mode, entry, defaultDate, onClose, onSaved, onD
           </div>
         </div>
       </div>
+
+      {confirmingDelete && (
+        <ConfirmDialog
+          title="ลบมื้อนี้เลยไหม?"
+          description="กู้คืนไม่ได้นะ"
+          confirmLabel="ลบ"
+          cancelLabel="ยกเลิก"
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmingDelete(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Droplets, StickyNote } from "lucide-react";
+import { Clock, Droplets, StickyNote } from "lucide-react";
 import { PhotoThumb } from "./PhotoThumb";
 import { PhotoLightbox } from "./PhotoLightbox";
 import type { Entry } from "@/lib/types";
@@ -36,7 +36,10 @@ export function EntryCard({ entry, onClick }: EntryCardProps) {
         <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-600">
           {entry.mealType}
         </span>
-        <span className="text-xs font-medium text-purple-300">{entry.time}</span>
+        <span className="flex items-center gap-1 text-xs font-medium text-purple-300">
+          <Clock className="h-3.5 w-3.5" />
+          {entry.time}
+        </span>
       </div>
 
       {entry.description && <p className="text-sm text-purple-900 whitespace-pre-wrap">{entry.description}</p>}

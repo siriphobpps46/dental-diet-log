@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { Eye } from "lucide-react";
+import { Eye, RefreshCw } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
@@ -25,7 +25,7 @@ export default function HomePage() {
   const { toast, notify } = useToast();
   const today = todayDateStr();
 
-  const { data, error, mutate } = useSWR<Entry[]>(
+  const { data, error, mutate, isValidating } = useSWR<Entry[]>(
     ["entries", "date", today],
     async () => {
       const data = await fetchEntriesByDate(today);
@@ -49,13 +49,23 @@ export default function HomePage() {
               <p className="text-sm text-purple-400">{formatThaiDate(today)}</p>
             </div>
           </div>
-          <Link
-            href="/review"
-            aria-label="ดูข้อมูลทั้งหมด"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
-          >
-            <Eye className="h-5 w-5" />
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => mutate()}
+              aria-label="รีเฟรช"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
+            >
+              <RefreshCw className={`h-5 w-5 ${isValidating ? "animate-spin" : ""}`} />
+            </button>
+            <Link
+              href="/review"
+              aria-label="ดูข้อมูลทั้งหมด"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
+            >
+              <Eye className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
       </header>
 

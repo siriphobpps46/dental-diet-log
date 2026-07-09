@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from "react";
 import useSWR from "swr";
+import { RefreshCw } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
 import { ErrorCard } from "@/components/ErrorCard";
 import { LoadingTooth } from "@/components/LoadingTooth";
 import { ToothMascot } from "@/components/ToothMascot";
 import { fetchEntriesByRange } from "@/lib/api";
-import { formatThaiDateShort, toDateStr, todayDateStr } from "@/lib/date";
+import { formatThaiDateShort, isToday, toDateStr, todayDateStr } from "@/lib/date";
 import type { Entry } from "@/lib/types";
 
 const DEFAULT_RANGE_DAYS = 90;
@@ -24,7 +25,7 @@ export default function ReviewPage() {
   const [to, setTo] = useState(todayDateStr);
   const [activeMealTypes, setActiveMealTypes] = useState<Set<string>>(new Set());
 
-  const { data, error, mutate } = useSWR<Entry[]>(
+  const { data, error, mutate, isValidating } = useSWR<Entry[]>(
     ["entries", "range", from, to],
     () => fetchEntriesByRange(from, to)
   );
@@ -71,12 +72,22 @@ export default function ReviewPage() {
   return (
     <div className="flex min-h-screen flex-col pb-10">
       <header className="mx-auto w-full max-w-lg px-5 pt-8">
-        <div className="flex items-center gap-3">
-          <ToothMascot pose="smile" className="h-12 w-12 shrink-0" />
-          <div>
-            <h1 className="text-xl font-bold text-purple-900">Dental Diet Log</h1>
-            <p className="text-xs font-semibold text-purple-400">รายงานบันทึกอาหารสำหรับการรักษาทันตกรรม</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <ToothMascot pose="smile" className="h-12 w-12 shrink-0" />
+            <div>
+              <h1 className="text-xl font-bold text-purple-900">Dental Diet Log</h1>
+              <p className="text-xs font-semibold text-purple-400">รายงานบันทึกอาหารสำหรับการรักษาทันตกรรม</p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => mutate()}
+            aria-label="รีเฟรช"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
+          >
+            <RefreshCw className={`h-5 w-5 ${isValidating ? "animate-spin" : ""}`} />
+          </button>
         </div>
       </header>
 
@@ -167,9 +178,21 @@ export default function ReviewPage() {
         {entries !== null && !loadError && groups.length === 0 && (
           <EmptyState pose="sleepy" title="ไม่พบข้อมูลในช่วงที่เลือก" subtitle="ลองปรับวันที่หรือตัวกรองดูนะ" />
         )}
+        {entries !== null && !loadError && groups.length > 0 && (
+          <p className="text-xs font-medium text-purple-400">
+            พบ {filtered.length} รายการ ใน {groups.length} วัน
+          </p>
+        )}
         {groups.map((group) => (
           <section key={group.date} className="flex flex-col gap-2.5">
-            <h2 className="text-sm font-bold text-purple-500">{formatThaiDateShort(group.date)}</h2>
+            <h2 className="flex items-center gap-2 text-sm font-bold text-purple-500">
+              {formatThaiDateShort(group.date)}
+              {isToday(group.date) && (
+                <span className="rounded-full bg-purple-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                  วันนี้
+                </span>
+              )}
+            </h2>
             <div className="flex flex-col gap-3">
               {group.entries.map((entry) => (
                 <EntryCard key={entry.id} entry={entry} />
