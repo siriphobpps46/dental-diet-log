@@ -173,8 +173,8 @@ function rowArrayToObject_(row) {
 function rowToEntry_(obj) {
   return {
     id: String(obj.id),
-    date: String(obj.date),
-    time: String(obj.time),
+    date: formatDateValue_(obj.date),
+    time: formatTimeValue_(obj.time),
     mealType: String(obj.mealType),
     description: String(obj.description),
     water: String(obj.water),
@@ -183,6 +183,23 @@ function rowToEntry_(obj) {
     createdAt: String(obj.createdAt),
     updatedAt: String(obj.updatedAt)
   };
+}
+
+// Sheets auto-converts strings like "2026-07-09" or "08:00" into real Date
+// cells on write, so reads must convert back to the plain YYYY-MM-DD /
+// HH:mm strings the client expects instead of stringifying the Date object.
+function formatDateValue_(value) {
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(value || '');
+}
+
+function formatTimeValue_(value) {
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'HH:mm');
+  }
+  return String(value || '');
 }
 
 // ---------- Drive photo upload ----------
