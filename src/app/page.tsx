@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { Eye } from "lucide-react";
+import { Eye, IdCard } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
@@ -11,18 +11,20 @@ import { EntryFormModal } from "@/components/EntryFormModal";
 import { ErrorCard } from "@/components/ErrorCard";
 import { FloatingAddButton } from "@/components/FloatingAddButton";
 import { LoadingTooth } from "@/components/LoadingTooth";
+import { ProfileFormModal } from "@/components/ProfileFormModal";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { Toast } from "@/components/Toast";
 import { ToothMascot } from "@/components/ToothMascot";
-import { fetchEntriesByDate } from "@/lib/api";
+import { fetchEntriesByDate, fetchProfile } from "@/lib/api";
 import { formatThaiDate, todayDateStr } from "@/lib/date";
 import { useToast } from "@/lib/useToast";
-import type { Entry } from "@/lib/types";
+import type { Entry, Profile } from "@/lib/types";
 
 type ModalState = { mode: "add" } | { mode: "edit"; entry: Entry } | null;
 
 export default function HomePage() {
   const [modalState, setModalState] = useState<ModalState>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const { toast, notify } = useToast();
   const today = todayDateStr();
 
@@ -34,6 +36,8 @@ export default function HomePage() {
       return data;
     }
   );
+
+  const { data: profile, mutate: mutateProfile } = useSWR<Profile>(["profile"], fetchProfile);
 
   const entries = data ?? null;
   const loadError = error ?? null;
@@ -50,13 +54,24 @@ export default function HomePage() {
               <p className="text-sm text-purple-400">{formatThaiDate(today)}</p>
             </div>
           </div>
-          <Link
-            href="/review"
-            aria-label="ดูข้อมูลทั้งหมด"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
-          >
-            <Eye className="h-5 w-5" />
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowProfileModal(true)}
+              disabled={!profile}
+              aria-label="ข้อมูลคนไข้"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600 disabled:opacity-50"
+            >
+              <IdCard className="h-5 w-5" />
+            </button>
+            <Link
+              href="/review"
+              aria-label="ดูข้อมูลทั้งหมด"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
+            >
+              <Eye className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -102,6 +117,18 @@ export default function HomePage() {
             setModalState(null);
             notify("ลบแล้วนะ");
             load();
+          }}
+        />
+      )}
+
+      {showProfileModal && profile && (
+        <ProfileFormModal
+          profile={profile}
+          onClose={() => setShowProfileModal(false)}
+          onSaved={(saved) => {
+            mutateProfile(saved);
+            setShowProfileModal(false);
+            notify("บันทึกข้อมูลคนไข้แล้ว 💜");
           }}
         />
       )}

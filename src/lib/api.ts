@@ -1,5 +1,5 @@
 import { getSupabase } from "./supabase";
-import type { Entry, EntryInput, NewPhoto } from "./types";
+import type { Entry, EntryInput, NewPhoto, Profile } from "./types";
 
 const PHOTOS_BUCKET = "photos";
 
@@ -14,6 +14,22 @@ interface EntryRow {
   photo_urls: string[] | null;
   created_at: string;
   updated_at: string;
+}
+
+interface ProfileRow {
+  id: string;
+  name: string;
+  gender: string;
+  birth_date: string | null;
+  updated_at: string;
+}
+
+function rowToProfile(row: ProfileRow): Profile {
+  return {
+    name: row.name,
+    gender: row.gender,
+    birthDate: row.birth_date ?? "",
+  };
 }
 
 function rowToEntry(row: EntryRow): Entry {
@@ -116,4 +132,29 @@ export async function deleteEntry(id: string): Promise<void> {
   const supabase = getSupabase();
   const { error } = await supabase.from("entries").delete().eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+export async function fetchProfile(): Promise<Profile> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase.from("profile").select("*").eq("id", "main").single();
+  if (error) throw new Error(error.message);
+  return rowToProfile(data as ProfileRow);
+}
+
+export async function updateProfile(input: Profile): Promise<Profile> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("profile")
+    .update({
+      name: input.name,
+      gender: input.gender,
+      birth_date: input.birthDate || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", "main")
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return rowToProfile(data as ProfileRow);
 }

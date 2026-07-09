@@ -32,3 +32,9 @@ export interface EntryInput {
   existingPhotoUrls?: string[];
   note: string;
 }
+
+export interface Profile {
+  name: string;
+  gender: string;
+  birthDate: string; // YYYY-MM-DD, "" if not set
+}

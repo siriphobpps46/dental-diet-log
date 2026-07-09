@@ -45,3 +45,25 @@ create policy "public write photos"
   on storage.objects for all
   using (bucket_id = 'photos')
   with check (bucket_id = 'photos');
+
+-- Patient profile (single row, shown on /review) ------------------------
+
+create table if not exists profile (
+  id text primary key default 'main',
+  name text not null default '',
+  gender text not null default '',
+  birth_date text,
+  updated_at timestamptz not null default now()
+);
+
+insert into profile (id, name, gender)
+values ('main', 'นายศิริภพ พูนประสิทธิ์', 'ชาย')
+on conflict (id) do nothing;
+
+alter table profile enable row level security;
+
+drop policy if exists "public read" on profile;
+create policy "public read" on profile for select using (true);
+
+drop policy if exists "public write" on profile;
+create policy "public write" on profile for all using (true) with check (true);

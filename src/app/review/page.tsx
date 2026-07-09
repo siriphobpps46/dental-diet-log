@@ -8,9 +8,9 @@ import { ErrorCard } from "@/components/ErrorCard";
 import { LoadingTooth } from "@/components/LoadingTooth";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { ToothMascot } from "@/components/ToothMascot";
-import { fetchEntriesByRange } from "@/lib/api";
-import { formatThaiDateShort, isToday, toDateStr, todayDateStr } from "@/lib/date";
-import type { Entry } from "@/lib/types";
+import { fetchEntriesByRange, fetchProfile } from "@/lib/api";
+import { calculateAge, formatThaiDateShort, isToday, toDateStr, todayDateStr } from "@/lib/date";
+import type { Entry, Profile } from "@/lib/types";
 
 const DEFAULT_RANGE_DAYS = 90;
 
@@ -30,9 +30,12 @@ export default function ReviewPage() {
     () => fetchEntriesByRange(from, to)
   );
 
+  const { data: profile } = useSWR<Profile>(["profile"], fetchProfile);
+
   const entries = data ?? null;
   const loadError = error ?? null;
   const load = () => mutate();
+  const age = profile ? calculateAge(profile.birthDate) : null;
 
   const mealTypes = useMemo(() => {
     if (!entries) return [];
@@ -99,12 +102,14 @@ export default function ReviewPage() {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-purple-400 font-medium">ชื่อ-นามสกุล</span>
-                  <span className="font-bold text-purple-900">นายศิริภพ พูนประสิทธิ์</span>
+                  <span className="font-bold text-purple-900">{profile?.name || "-"}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-purple-400 font-medium">เพศ / อายุ</span>
-                  <span className="font-bold text-purple-900">ชาย / 23 ปี</span>
+                  <span className="font-bold text-purple-900">
+                    {profile?.gender || "-"} / {age !== null ? `${age} ปี` : "-"}
+                  </span>
                 </div>
 
                 <div className="mt-1 border-t border-purple-50 pt-2 flex flex-col gap-1.5 text-[11px] text-purple-500">

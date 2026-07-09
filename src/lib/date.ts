@@ -50,3 +50,14 @@ export function formatThaiDateShort(dateStr: string): string {
 export function isToday(dateStr: string): boolean {
   return dateStr === todayDateStr();
 }
+
+export function calculateAge(birthDateStr: string): number | null {
+  if (!birthDateStr) return null;
+  const [y, m, d] = birthDateStr.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const today = new Date();
+  let age = today.getFullYear() - y;
+  const hadBirthdayThisYear = today.getMonth() + 1 > m || (today.getMonth() + 1 === m && today.getDate() >= d);
+  if (!hadBirthdayThisYear) age--;
+  return age;
+}
