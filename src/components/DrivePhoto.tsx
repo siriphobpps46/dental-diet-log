@@ -13,8 +13,12 @@ interface DrivePhotoProps {
 }
 
 export function DrivePhoto({ url, alt, className }: DrivePhotoProps) {
-  const [dataUrl, setDataUrl] = useState<string | null>(() => cache.get(url) ?? null);
-  const [failed, setFailed] = useState(false);
+  // dataUrl is always derived fresh from the cache + a url-tagged fetch result,
+  // never stored as plain state — a component instance can be reused across
+  // different (already-cached) urls, e.g. paging through the photo lightbox,
+  // and stale state wouldn't pick up the new url's cached value.
+  const [fetched, setFetched] = useState<{ url: string; dataUrl: string } | null>(null);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (cache.has(url)) return;
@@ -24,17 +28,19 @@ export function DrivePhoto({ url, alt, className }: DrivePhotoProps) {
       .then((resolved) => {
         if (ignore) return;
         cache.set(url, resolved);
-        setDataUrl(resolved);
+        setFetched({ url, dataUrl: resolved });
       })
       .catch(() => {
-        if (!ignore) setFailed(true);
+        if (!ignore) setFailedUrl(url);
       });
     return () => {
       ignore = true;
     };
   }, [url]);
 
-  if (failed) {
+  const dataUrl = cache.get(url) ?? (fetched?.url === url ? fetched.dataUrl : null);
+
+  if (!dataUrl && failedUrl === url) {
     return (
       <div className={`${className} flex items-center justify-center bg-purple-50 text-purple-300`}>
         <ImageOff className="h-5 w-5" />
