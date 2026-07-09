@@ -52,3 +52,10 @@ body {
     transform: rotate(4deg);
   }
 }
+
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+}
