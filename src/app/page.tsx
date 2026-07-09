@@ -29,7 +29,7 @@ export default function HomePage() {
     ["entries", "date", today],
     async () => {
       const data = await fetchEntriesByDate(today);
-      data.sort((a, b) => a.time.localeCompare(b.time));
+      data.sort((a, b) => b.time.localeCompare(a.time));
       return data;
     }
   );

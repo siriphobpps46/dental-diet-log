@@ -55,7 +55,7 @@ export default function ReviewPage() {
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
       .map(([date, list]) => ({
         date,
-        entries: list.sort((a, b) => a.time.localeCompare(b.time)),
+        entries: list.sort((a, b) => b.time.localeCompare(a.time)),
       }));
   }, [filtered]);
 
