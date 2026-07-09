@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Mali } from "next/font/google";
+import { AppSplash } from "@/components/AppSplash";
 import "./globals.css";
 
 const mali = Mali({
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="th" className={`${mali.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-gradient-to-b from-violet-50 to-purple-100 font-sans text-purple-950 antialiased">
+        <AppSplash />
         {children}
       </body>
     </html>
