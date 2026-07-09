@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Camera, Loader2, X } from "lucide-react";
+import { toDisplayPhotoUrl } from "@/lib/api";
 import { compressImage } from "@/lib/image";
 import type { NewPhoto } from "@/lib/types";
 
@@ -40,7 +41,7 @@ export function PhotoUploader({
       {existingUrls.map((url) => (
         <div key={url} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl ring-1 ring-purple-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt="รูปอาหาร" className="h-full w-full object-cover" />
+          <img src={toDisplayPhotoUrl(url)} alt="รูปอาหาร" className="h-full w-full object-cover" />
           <button
             type="button"
             onClick={() => onRemoveExisting(url)}

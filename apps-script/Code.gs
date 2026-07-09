@@ -10,6 +10,11 @@
  *
  * Client sends POST with Content-Type: text/plain to avoid CORS preflight.
  * Body is a JSON string, parsed manually from e.postData.contents.
+ *
+ * doGet(?photo=FILE_ID) serves a photo's bytes directly instead of the raw
+ * drive.google.com link — Chrome's Opaque Response Blocking rejects hotlinked
+ * Drive URLs in <img> tags since Drive doesn't send CORS/CORP headers, so the
+ * app fetches images through this endpoint instead (see lib/api.ts).
  */
 
 var SHEET_NAME = 'Entries';
@@ -20,6 +25,11 @@ var HEADERS = ['id', 'date', 'time', 'mealType', 'description', 'water', 'photoU
 function doGet(e) {
   try {
     var params = (e && e.parameter) || {};
+
+    if (params.photo) {
+      return DriveApp.getFileById(params.photo).getBlob();
+    }
+
     var sheet = getSheet_();
     var rows = readAllRows_(sheet);
     var entries = rows.map(rowToEntry_);

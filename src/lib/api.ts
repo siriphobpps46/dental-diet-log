@@ -58,3 +58,12 @@ export async function updateEntry(input: EntryInput): Promise<Entry> {
 export async function deleteEntry(id: string): Promise<void> {
   await post("delete", { id });
 }
+
+// Chrome's Opaque Response Blocking rejects hotlinked drive.google.com URLs
+// in <img> tags (Drive doesn't send CORS/CORP headers), so photos are always
+// displayed through the Apps Script's own ?photo= proxy instead.
+export function toDisplayPhotoUrl(driveUrl: string): string {
+  const fileId = driveUrl.match(/[?&]id=([^&]+)/)?.[1];
+  if (!fileId || !BASE_URL) return driveUrl;
+  return `${BASE_URL}?photo=${fileId}`;
+}

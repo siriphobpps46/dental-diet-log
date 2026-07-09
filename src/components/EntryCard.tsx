@@ -1,4 +1,5 @@
 import { Droplets, StickyNote } from "lucide-react";
+import { toDisplayPhotoUrl } from "@/lib/api";
 import type { Entry } from "@/lib/types";
 
 export function EntryCard({ entry, onClick }: { entry: Entry; onClick: () => void }) {
@@ -37,7 +38,7 @@ export function EntryCard({ entry, onClick }: { entry: Entry; onClick: () => voi
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={url}
-              src={url}
+              src={toDisplayPhotoUrl(url)}
               alt="รูปอาหาร"
               className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-purple-100"
             />
