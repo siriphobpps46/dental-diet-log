@@ -60,10 +60,17 @@ export async function deleteEntry(id: string): Promise<void> {
 }
 
 // Chrome's Opaque Response Blocking rejects hotlinked drive.google.com URLs
-// in <img> tags (Drive doesn't send CORS/CORP headers), so photos are always
-// displayed through the Apps Script's own ?photo= proxy instead.
-export function toDisplayPhotoUrl(driveUrl: string): string {
+// in <img> tags (Drive doesn't send CORS/CORP headers), and Apps Script Web
+// Apps can't return a raw Blob from doGet either. So photos are fetched as
+// base64 JSON through the Apps Script and rendered as data: URLs instead.
+export async function fetchPhotoDataUrl(driveUrl: string): Promise<string> {
   const fileId = driveUrl.match(/[?&]id=([^&]+)/)?.[1];
-  if (!fileId || !BASE_URL) return driveUrl;
-  return `${BASE_URL}?photo=${fileId}`;
+  if (!fileId) throw new Error("ลิงก์รูปไม่ถูกต้อง");
+
+  const url = new URL(requireBaseUrl());
+  url.searchParams.set("photo", fileId);
+  const res = await fetch(url.toString());
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || "โหลดรูปไม่สำเร็จ");
+  return `data:${data.mimeType};base64,${data.base64}`;
 }

@@ -11,10 +11,11 @@
  * Client sends POST with Content-Type: text/plain to avoid CORS preflight.
  * Body is a JSON string, parsed manually from e.postData.contents.
  *
- * doGet(?photo=FILE_ID) serves a photo's bytes directly instead of the raw
+ * doGet(?photo=FILE_ID) returns a photo as base64 JSON instead of the raw
  * drive.google.com link — Chrome's Opaque Response Blocking rejects hotlinked
- * Drive URLs in <img> tags since Drive doesn't send CORS/CORP headers, so the
- * app fetches images through this endpoint instead (see lib/api.ts).
+ * Drive URLs in <img> tags since Drive doesn't send CORS/CORP headers, and
+ * Web Apps can't return a raw Blob from doGet ("unsupported result type"),
+ * so the client fetches this and renders it as a data: URL (see lib/api.ts).
  */
 
 var SHEET_NAME = 'Entries';
@@ -27,7 +28,7 @@ function doGet(e) {
     var params = (e && e.parameter) || {};
 
     if (params.photo) {
-      return DriveApp.getFileById(params.photo).getBlob();
+      return servePhoto_(params.photo);
     }
 
     var sheet = getSheet_();
@@ -49,6 +50,19 @@ function doGet(e) {
     });
 
     return jsonResponse_({ ok: true, entries: entries });
+  } catch (err) {
+    return jsonResponse_({ ok: false, error: String(err) });
+  }
+}
+
+function servePhoto_(fileId) {
+  try {
+    var blob = DriveApp.getFileById(fileId).getBlob();
+    return jsonResponse_({
+      ok: true,
+      mimeType: blob.getContentType(),
+      base64: Utilities.base64Encode(blob.getBytes())
+    });
   } catch (err) {
     return jsonResponse_({ ok: false, error: String(err) });
   }

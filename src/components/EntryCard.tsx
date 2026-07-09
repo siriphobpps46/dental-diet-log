@@ -1,5 +1,5 @@
 import { Droplets, StickyNote } from "lucide-react";
-import { toDisplayPhotoUrl } from "@/lib/api";
+import { DrivePhoto } from "./DrivePhoto";
 import type { Entry } from "@/lib/types";
 
 export function EntryCard({ entry, onClick }: { entry: Entry; onClick: () => void }) {
@@ -35,10 +35,9 @@ export function EntryCard({ entry, onClick }: { entry: Entry; onClick: () => voi
       {entry.photoUrls.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pt-1">
           {entry.photoUrls.map((url) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <DrivePhoto
               key={url}
-              src={toDisplayPhotoUrl(url)}
+              url={url}
               alt="รูปอาหาร"
               className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-purple-100"
             />
