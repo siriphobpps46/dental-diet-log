@@ -131,7 +131,7 @@ export default function ReviewPage() {
             )}
 
             <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm shadow-purple-100 ring-1 ring-purple-50">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5 min-w-0">
                   <span className="text-xs font-semibold text-purple-400">จากวันที่</span>
                   <input
