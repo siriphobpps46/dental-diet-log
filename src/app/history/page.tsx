@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { Eye } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
 import { EntryFormModal } from "@/components/EntryFormModal";
 import { ErrorCard } from "@/components/ErrorCard";
-import { EntryListSkeleton } from "@/components/Skeleton";
+import { LoadingTooth } from "@/components/LoadingTooth";
 import { Toast } from "@/components/Toast";
 import { fetchEntriesByRange } from "@/lib/api";
 import { formatThaiDateShort, toDateStr, todayDateStr } from "@/lib/date";
@@ -70,13 +72,22 @@ export default function HistoryPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="mx-auto w-full max-w-lg px-5 pt-8">
-        <h1 className="text-xl font-bold text-purple-900">ประวัติการบันทึก</h1>
-        <p className="text-sm text-purple-400">ย้อนหลัง {RANGE_DAYS} วัน</p>
+      <header className="mx-auto flex w-full max-w-lg items-center justify-between gap-3 px-5 pt-8">
+        <div>
+          <h1 className="text-xl font-bold text-purple-900">ประวัติการบันทึก</h1>
+          <p className="text-sm text-purple-400">ย้อนหลัง {RANGE_DAYS} วัน</p>
+        </div>
+        <Link
+          href="/review"
+          aria-label="ดูข้อมูลทั้งหมด"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
+        >
+          <Eye className="h-5 w-5" />
+        </Link>
       </header>
 
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-5 px-5 pb-24 pt-6">
-        {entries === null && !loadError && <EntryListSkeleton count={4} />}
+        {entries === null && !loadError && <LoadingTooth />}
         {loadError && <ErrorCard error={loadError} onRetry={load} />}
         {entries !== null && !loadError && groups.length === 0 && (
           <EmptyState

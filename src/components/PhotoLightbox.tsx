@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { DrivePhoto } from "./DrivePhoto";
 
@@ -24,7 +25,21 @@ export function PhotoLightbox({ urls, index, onClose, onIndexChange }: PhotoLigh
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [index, urls.length, onClose, onIndexChange]);
 
-  return (
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
+
+  // Rendered via a portal straight into <body>: a CSS transform on any
+  // ancestor (e.g. EntryCard's active:scale-[0.99] press effect) would
+  // otherwise create a new containing block for this fixed-position overlay,
+  // making it position itself relative to that ancestor instead of the
+  // viewport — which is exactly the "works from the form, weird from the
+  // card" bug, since only the card has a transform in its interactive states.
+  return createPortal(
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 p-4"
       onClick={(e) => {
@@ -78,6 +93,7 @@ export function PhotoLightbox({ urls, index, onClose, onIndexChange }: PhotoLigh
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }

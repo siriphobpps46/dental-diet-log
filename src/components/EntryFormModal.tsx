@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Trash2, X } from "lucide-react";
 import { MealChips } from "./MealChips";
 import { PhotoUploader } from "./PhotoUploader";
@@ -31,6 +31,14 @@ export function EntryFormModal({ mode, entry, defaultDate, onClose, onSaved, onD
   const [error, setError] = useState<string | null>(null);
 
   const busy = isSaving || isDeleting;
+
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, []);
 
   async function handleSave() {
     if (busy) return;
@@ -108,12 +116,22 @@ export function EntryFormModal({ mode, entry, defaultDate, onClose, onSaved, onD
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="วันที่">
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className={`${inputClass} min-w-0`}
+              />
             </Field>
             <Field label="เวลา">
-              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputClass} />
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className={`${inputClass} min-w-0`}
+              />
             </Field>
           </div>
 

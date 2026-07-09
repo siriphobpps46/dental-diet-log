@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { Eye } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
 import { EntryFormModal } from "@/components/EntryFormModal";
 import { ErrorCard } from "@/components/ErrorCard";
 import { FloatingAddButton } from "@/components/FloatingAddButton";
-import { EntryListSkeleton } from "@/components/Skeleton";
+import { LoadingTooth } from "@/components/LoadingTooth";
 import { Toast } from "@/components/Toast";
 import { ToothMascot } from "@/components/ToothMascot";
 import { fetchEntriesByDate } from "@/lib/api";
@@ -54,17 +56,26 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="mx-auto w-full max-w-lg px-5 pt-8">
-        <div className="flex items-center gap-3">
-          <ToothMascot pose="wave" className="h-14 w-14 shrink-0" />
-          <div>
-            <h1 className="text-xl font-bold text-purple-900">Dental Diet Log</h1>
-            <p className="text-sm text-purple-400">{formatThaiDate(today)}</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <ToothMascot pose="wave" className="h-14 w-14 shrink-0" />
+            <div>
+              <h1 className="text-xl font-bold text-purple-900">Dental Diet Log</h1>
+              <p className="text-sm text-purple-400">{formatThaiDate(today)}</p>
+            </div>
           </div>
+          <Link
+            href="/review"
+            aria-label="ดูข้อมูลทั้งหมด"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-purple-400 shadow-sm shadow-purple-100 ring-1 ring-purple-50 hover:text-purple-600"
+          >
+            <Eye className="h-5 w-5" />
+          </Link>
         </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-3 px-5 pb-24 pt-6">
-        {entries === null && !loadError && <EntryListSkeleton />}
+        {entries === null && !loadError && <LoadingTooth />}
         {loadError && <ErrorCard error={loadError} onRetry={load} />}
         {entries !== null && !loadError && entries.length === 0 && (
           <EmptyState

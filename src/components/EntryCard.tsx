@@ -6,18 +6,31 @@ import { DrivePhoto } from "./DrivePhoto";
 import { PhotoLightbox } from "./PhotoLightbox";
 import type { Entry } from "@/lib/types";
 
-export function EntryCard({ entry, onClick }: { entry: Entry; onClick: () => void }) {
+interface EntryCardProps {
+  entry: Entry;
+  onClick?: () => void;
+}
+
+export function EntryCard({ entry, onClick }: EntryCardProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const interactiveProps = onClick
+    ? {
+        role: "button" as const,
+        tabIndex: 0,
+        onClick,
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.key === "Enter" || e.key === " ") onClick();
+        },
+      }
+    : {};
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onClick();
-      }}
-      className="flex w-full cursor-pointer flex-col gap-2.5 rounded-2xl bg-white p-4 text-left shadow-sm shadow-purple-100 ring-1 ring-purple-50 transition active:scale-[0.99] hover:ring-purple-200"
+      {...interactiveProps}
+      className={`flex w-full flex-col gap-2.5 rounded-2xl bg-white p-4 text-left shadow-sm shadow-purple-100 ring-1 ring-purple-50 transition ${
+        onClick ? "cursor-pointer active:scale-[0.99] hover:ring-purple-200" : ""
+      }`}
     >
       <div className="flex items-center justify-between">
         <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-600">
