@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import { Eye } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
@@ -20,38 +21,22 @@ import type { Entry } from "@/lib/types";
 type ModalState = { mode: "add" } | { mode: "edit"; entry: Entry } | null;
 
 export default function HomePage() {
-  const [entries, setEntries] = useState<Entry[] | null>(null);
-  const [loadError, setLoadError] = useState<Error | null>(null);
   const [modalState, setModalState] = useState<ModalState>(null);
   const { toast, notify } = useToast();
   const today = todayDateStr();
 
-  const load = useCallback(async () => {
-    setLoadError(null);
-    try {
+  const { data, error, mutate } = useSWR<Entry[]>(
+    ["entries", "date", today],
+    async () => {
       const data = await fetchEntriesByDate(today);
       data.sort((a, b) => a.time.localeCompare(b.time));
-      setEntries(data);
-    } catch (err) {
-      setLoadError(err instanceof Error ? err : new Error("โหลดข้อมูลไม่สำเร็จ"));
+      return data;
     }
-  }, [today]);
+  );
 
-  useEffect(() => {
-    let ignore = false;
-    (async () => {
-      try {
-        const data = await fetchEntriesByDate(today);
-        data.sort((a, b) => a.time.localeCompare(b.time));
-        if (!ignore) setEntries(data);
-      } catch (err) {
-        if (!ignore) setLoadError(err instanceof Error ? err : new Error("โหลดข้อมูลไม่สำเร็จ"));
-      }
-    })();
-    return () => {
-      ignore = true;
-    };
-  }, [today]);
+  const entries = data ?? null;
+  const loadError = error ?? null;
+  const load = () => mutate();
 
   return (
     <div className="flex min-h-screen flex-col">

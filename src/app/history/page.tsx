@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import { Eye } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
@@ -18,41 +19,22 @@ import type { Entry } from "@/lib/types";
 const RANGE_DAYS = 60;
 
 export default function HistoryPage() {
-  const [entries, setEntries] = useState<Entry[] | null>(null);
-  const [loadError, setLoadError] = useState<Error | null>(null);
   const [selected, setSelected] = useState<Entry | null>(null);
   const { toast, notify } = useToast();
 
-  const load = useCallback(async () => {
-    setLoadError(null);
-    try {
+  const { data, error, mutate } = useSWR<Entry[]>(
+    ["entries", "history"],
+    () => {
       const to = todayDateStr();
       const fromDate = new Date();
       fromDate.setDate(fromDate.getDate() - RANGE_DAYS);
-      const data = await fetchEntriesByRange(toDateStr(fromDate), to);
-      setEntries(data);
-    } catch (err) {
-      setLoadError(err instanceof Error ? err : new Error("โหลดข้อมูลไม่สำเร็จ"));
+      return fetchEntriesByRange(toDateStr(fromDate), to);
     }
-  }, []);
+  );
 
-  useEffect(() => {
-    let ignore = false;
-    (async () => {
-      try {
-        const to = todayDateStr();
-        const fromDate = new Date();
-        fromDate.setDate(fromDate.getDate() - RANGE_DAYS);
-        const data = await fetchEntriesByRange(toDateStr(fromDate), to);
-        if (!ignore) setEntries(data);
-      } catch (err) {
-        if (!ignore) setLoadError(err instanceof Error ? err : new Error("โหลดข้อมูลไม่สำเร็จ"));
-      }
-    })();
-    return () => {
-      ignore = true;
-    };
-  }, []);
+  const entries = data ?? null;
+  const loadError = error ?? null;
+  const load = () => mutate();
 
   const groups = useMemo(() => {
     if (!entries) return [];

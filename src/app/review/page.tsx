@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryCard } from "@/components/EntryCard";
 import { ErrorCard } from "@/components/ErrorCard";
@@ -19,36 +20,18 @@ function defaultFrom(): string {
 }
 
 export default function ReviewPage() {
-  const [entries, setEntries] = useState<Entry[] | null>(null);
-  const [loadError, setLoadError] = useState<Error | null>(null);
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(todayDateStr);
   const [activeMealTypes, setActiveMealTypes] = useState<Set<string>>(new Set());
 
-  const load = useCallback(async () => {
-    setLoadError(null);
-    try {
-      const data = await fetchEntriesByRange(from, to);
-      setEntries(data);
-    } catch (err) {
-      setLoadError(err instanceof Error ? err : new Error("โหลดข้อมูลไม่สำเร็จ"));
-    }
-  }, [from, to]);
+  const { data, error, mutate } = useSWR<Entry[]>(
+    ["entries", "range", from, to],
+    () => fetchEntriesByRange(from, to)
+  );
 
-  useEffect(() => {
-    let ignore = false;
-    (async () => {
-      try {
-        const data = await fetchEntriesByRange(from, to);
-        if (!ignore) setEntries(data);
-      } catch (err) {
-        if (!ignore) setLoadError(err instanceof Error ? err : new Error("โหลดข้อมูลไม่สำเร็จ"));
-      }
-    })();
-    return () => {
-      ignore = true;
-    };
-  }, [from, to]);
+  const entries = data ?? null;
+  const loadError = error ?? null;
+  const load = () => mutate();
 
   const mealTypes = useMemo(() => {
     if (!entries) return [];
