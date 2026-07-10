@@ -40,6 +40,13 @@ function hasRiskKeyword(entry: Entry): boolean {
   return RISK_KEYWORDS.some((keyword) => text.includes(keyword));
 }
 
+function isEntryRisky(entry: Entry): boolean {
+  if (entry.aiRiskLevel && entry.aiRiskLevel !== "none") {
+    return entry.aiRiskLevel === "high" || entry.aiRiskLevel === "medium";
+  }
+  return hasRiskKeyword(entry);
+}
+
 export function ReviewSummaryCard({ entries, from, to }: ReviewSummaryCardProps) {
   const summary = useMemo(() => {
     const totalDays = daysBetweenInclusive(from, to);
@@ -52,7 +59,7 @@ export function ReviewSummaryCard({ entries, from, to }: ReviewSummaryCardProps)
     const meals = Array.from(mealCounts.entries()).sort((a, b) => b[1] - a[1]);
     const maxMealCount = meals[0]?.[1] ?? 0;
 
-    const riskCount = entries.filter(hasRiskKeyword).length;
+    const riskCount = entries.filter(isEntryRisky).length;
 
     return { totalDays, loggedDays, meals, maxMealCount, riskCount };
   }, [entries, from, to]);
@@ -78,7 +85,7 @@ export function ReviewSummaryCard({ entries, from, to }: ReviewSummaryCardProps)
       <div className="flex items-center gap-2 text-xs">
         <Candy className="h-4 w-4 shrink-0 text-purple-400" />
         <span className="text-purple-500">
-          พบของหวาน/เครื่องดื่มเสี่ยงฟันผุ <span className="font-bold text-purple-900">{summary.riskCount}</span>{" "}
+          พบมื้ออาหารเสี่ยงฟันผุ <span className="font-bold text-purple-900">{summary.riskCount}</span>{" "}
           ครั้ง จาก {entries.length} รายการ ({riskPct}%)
         </span>
       </div>

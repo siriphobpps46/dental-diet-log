@@ -12,6 +12,8 @@ interface EntryRow {
   water: string;
   note: string;
   photo_urls: string[] | null;
+  ai_risk_level: string | null;
+  ai_analysis: any | null;
   created_at: string;
   updated_at: string;
 }
@@ -44,6 +46,8 @@ function rowToEntry(row: EntryRow): Entry {
     note: row.note,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    aiRiskLevel: row.ai_risk_level ?? "none",
+    aiAnalysis: row.ai_analysis ?? null,
   };
 }
 
@@ -80,9 +84,34 @@ export async function fetchEntriesByRange(from: string, to: string): Promise<Ent
   return (data as EntryRow[]).map(rowToEntry);
 }
 
+async function callAnalyzeApi(description: string, water: string, photoUrls: string[]) {
+  try {
+    const res = await fetch("/api/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ description, water, photoUrls }),
+    });
+    if (!res.ok) {
+      throw new Error(`Analyze API returned status ${res.status}`);
+    }
+    return await res.json();
+  } catch (error) {
+    console.error("Error calling analyze API:", error);
+    return {
+      riskLevel: "low",
+      foodItems: [],
+      dentalAnalysis: "ไม่สามารถประมวลผลข้อมูลด้วย AI ในขณะบันทึกได้",
+      recommendation: "แปรงฟันทำความสะอาดช่องปากตามปกติหลังมื้ออาหาร",
+    };
+  }
+}
+
 export async function createEntry(input: EntryInput): Promise<Entry> {
   const supabase = getSupabase();
   const newUrls = await uploadPhotos(input.photos);
+  const aiResult = await callAnalyzeApi(input.description, input.water, newUrls);
 
   const { data, error } = await supabase
     .from("entries")
@@ -94,6 +123,8 @@ export async function createEntry(input: EntryInput): Promise<Entry> {
       water: input.water,
       note: input.note,
       photo_urls: newUrls,
+      ai_risk_level: aiResult.riskLevel,
+      ai_analysis: aiResult,
     })
     .select()
     .single();
@@ -107,6 +138,7 @@ export async function updateEntry(input: EntryInput): Promise<Entry> {
   const supabase = getSupabase();
   const newUrls = await uploadPhotos(input.photos);
   const photoUrls = [...(input.existingPhotoUrls ?? []), ...newUrls];
+  const aiResult = await callAnalyzeApi(input.description, input.water, photoUrls);
 
   const { data, error } = await supabase
     .from("entries")
@@ -118,6 +150,8 @@ export async function updateEntry(input: EntryInput): Promise<Entry> {
       water: input.water,
       note: input.note,
       photo_urls: photoUrls,
+      ai_risk_level: aiResult.riskLevel,
+      ai_analysis: aiResult,
       updated_at: new Date().toISOString(),
     })
     .eq("id", input.id)

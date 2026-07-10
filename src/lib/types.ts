@@ -13,6 +13,13 @@ export interface Entry {
   note: string;
   createdAt: string;
   updatedAt: string;
+  aiRiskLevel?: string;
+  aiAnalysis?: {
+    riskLevel: "high" | "medium" | "low";
+    foodItems: string[];
+    dentalAnalysis: string;
+    recommendation: string;
+  } | null;
 }
 
 export interface NewPhoto {

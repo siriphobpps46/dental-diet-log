@@ -12,6 +12,8 @@ create table if not exists entries (
   water text not null default '',
   note text not null default '',
   photo_urls text[] not null default '{}',
+  ai_risk_level text not null default 'none',
+  ai_analysis jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

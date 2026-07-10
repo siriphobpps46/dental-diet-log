@@ -13,6 +13,7 @@ interface EntryCardProps {
 
 export function EntryCard({ entry, onClick }: EntryCardProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [showAI, setShowAI] = useState(false);
 
   const interactiveProps = onClick
     ? {
@@ -77,6 +78,59 @@ export function EntryCard({ entry, onClick }: EntryCardProps) {
               />
             </button>
           ))}
+        </div>
+      )}
+
+      {entry.aiRiskLevel && entry.aiRiskLevel !== "none" && (
+        <div className="mt-1 border-t border-purple-50 pt-2 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAI(!showAI);
+              }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 hover:text-purple-700 transition"
+            >
+              <span>🤖 {showAI ? "ซ่อนความเห็น AI" : "ดูผลวิเคราะห์ AI"}</span>
+            </button>
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ${
+              entry.aiRiskLevel === "high"
+                ? "bg-rose-50 text-rose-600 ring-rose-200"
+                : entry.aiRiskLevel === "medium"
+                ? "bg-amber-50 text-amber-600 ring-amber-200"
+                : "bg-emerald-50 text-emerald-600 ring-emerald-200"
+            }`}>
+              {entry.aiRiskLevel === "high"
+                ? "เสี่ยงฟันผุสูง ⚠️"
+                : entry.aiRiskLevel === "medium"
+                ? "เสี่ยงฟันผุปานกลาง ⚠️"
+                : "เสี่ยงฟันผุต่ำ ✨"}
+            </span>
+          </div>
+
+          {showAI && entry.aiAnalysis && (
+            <div className="rounded-xl bg-purple-50/50 p-3 text-xs text-purple-900 border border-purple-100/70 flex flex-col gap-2">
+              {entry.aiAnalysis.foodItems && entry.aiAnalysis.foodItems.length > 0 && (
+                <div>
+                  <span className="font-bold text-purple-700">อาหารที่พบ: </span>
+                  <span>{entry.aiAnalysis.foodItems.join(", ")}</span>
+                </div>
+              )}
+              {entry.aiAnalysis.dentalAnalysis && (
+                <div>
+                  <span className="font-bold text-purple-700">ความเห็นทางทันตกรรม: </span>
+                  <p className="mt-0.5 text-purple-800 leading-relaxed">{entry.aiAnalysis.dentalAnalysis}</p>
+                </div>
+              )}
+              {entry.aiAnalysis.recommendation && (
+                <div className="border-t border-purple-100/50 pt-1.5 mt-0.5">
+                  <span className="font-bold text-emerald-700">คำแนะนำ: </span>
+                  <p className="mt-0.5 text-emerald-800 leading-relaxed font-medium">{entry.aiAnalysis.recommendation}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
